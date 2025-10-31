@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Study Habits Recommender{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            <i class="fas fa-brain"></i>
+            Recommending Study Habits Based on Student Behavior
+        </h1>
+        <p class="hero-subtitle">A Data Science Project for Personalized Learning</p>
+        <p class="hero-description">
+            Get personalized study recommendations based on your learning patterns, attention span, 
+            and engagement style using advanced machine learning algorithms.
+        </p>
+        
+        <div class="hero-buttons">
+            <a href="{{ url_for('student_login') }}" class="btn btn-primary">
+                <i class="fas fa-user-graduate"></i> Student Portal
+            </a>
+            <a href="{{ url_for('admin_login') }}" class="btn btn-secondary">
+                <i class="fas fa-user-shield"></i> Admin Portal
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="features-section">
+    <h2 class="section-title">Key Features</h2>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3>Behavior Analysis</h3>
+            <p>Track and analyze your study patterns, time spent, and performance metrics</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-project-diagram"></i>
+            </div>
+            <h3>Smart Clustering</h3>
+            <p>Identify your learning style using K-Means and DBSCAN clustering algorithms</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-lightbulb"></i>
+            </div>
+            <h3>Personalized Recommendations</h3>
+            <p>Receive tailored study routines, break patterns, and method suggestions</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h3>Optimal Scheduling</h3>
+            <p>Get customized study schedules based on your peak performance times</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <h3>Performance Tracking</h3>
+            <p>Monitor your progress with detailed analytics and visualizations</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-tools"></i>
+            </div>
+            <h3>Study Tools</h3>
+            <p>Access recommended tools like Pomodoro timers, flashcards, and focus apps</p>
+        </div>
+    </div>
+</div>
+
+<div class="clusters-section">
+    <h2 class="section-title">Student Behavior Clusters</h2>
+    <div class="clusters-grid">
+        <div class="cluster-card cluster-1">
+            <div class="cluster-header">
+                <i class="fas fa-star"></i>
+                <h3>Focused Studiers</h3>
+            </div>
+            <p>Long sessions with minimal distractions and high concentration</p>
+            <div class="cluster-stats">
+                <span><i class="fas fa-clock"></i> 4.2 hrs avg</span>
+                <span><i class="fas fa-chart-line"></i> 88% performance</span>
+            </div>
+        </div>
+        
+        <div class="cluster-card cluster-2">
+            <div class="cluster-header">
+                <i class="fas fa-bolt"></i>
+                <h3>Short Burst Learners</h3>
+            </div>
+            <p>Brief, frequent study sessions with active engagement</p>
+            <div class="cluster-stats">
+                <span><i class="fas fa-clock"></i> 1.8 hrs avg</span>
+                <span><i class="fas fa-chart-line"></i> 75% performance</span>
+            </div>
+        </div>
+        
+        <div class="cluster-card cluster-3">
+            <div class="cluster-header">
+                <i class="fas fa-moon"></i>
+                <h3>Night Owls</h3>
+            </div>
+            <p>Late-night study sessions with deep focus and concentration</p>
+            <div class="cluster-stats">
+                <span><i class="fas fa-clock"></i> 3.5 hrs avg</span>
+                <span><i class="fas fa-chart-line"></i> 82% performance</span>
+            </div>
+        </div>
+        
+        <div class="cluster-card cluster-4">
+            <div class="cluster-header">
+                <i class="fas fa-random"></i>
+                <h3>Distracted Learners</h3>
+            </div>
+            <p>High interruption frequency, need structured environments</p>
+            <div class="cluster-stats">
+                <span><i class="fas fa-clock"></i> 2.2 hrs avg</span>
+                <span><i class="fas fa-chart-line"></i> 68% performance</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="info-section">
+    <h2 class="section-title">How It Works</h2>
+    <div class="steps-container">
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h3>Log Your Study Sessions</h3>
+                <p>Record your daily study activities, durations, and quiz scores</p>
+            </div>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h3>AI Analyzes Your Patterns</h3>
+                <p>Machine learning algorithms identify your unique learning style</p>
+            </div>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h3>Get Personalized Recommendations</h3>
+                <p>Receive customized study plans optimized for your success</p>
+            </div>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+                <h3>Track Your Progress</h3>
+                <p>Monitor improvements and adjust strategies based on feedback</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cta-section">
+    <h2>Ready to Optimize Your Study Habits?</h2>
+    <p>Join hundreds of students already improving their academic performance</p>
+    <a href="{{ url_for('student_login') }}" class="btn btn-primary btn-large">
+        Get Started Now <i class="fas fa-arrow-right"></i>
+    </a>
+</div>
+{% endblock %}

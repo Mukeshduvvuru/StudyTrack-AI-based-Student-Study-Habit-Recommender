@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - Study Habits Recommender{% endblock %}
+
+{% block nav_items %}
+<a href="{{ url_for('student_dashboard') }}" class="nav-item active">Dashboard</a>
+<a href="{{ url_for('logout') }}" class="nav-item">
+    <i class="fas fa-sign-out-alt"></i> Logout
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Welcome, <span id="studentName">Student</span>!</h1>
+        <p>Track your study habits and get personalized recommendations</p>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: #4CAF50;">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="totalSessions">0</h3>
+                <p>Study Sessions</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon" style="background: #2196F3;">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="totalHours">0</h3>
+                <p>Total Hours</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon" style="background: #FF9800;">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="avgScore">0%</h3>
+                <p>Avg Quiz Score</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon" style="background: #E91E63;">
+                <i class="fas fa-fire"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="currentStreak">0</h3>
+                <p>Day Streak</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="dashboard-grid">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-plus-circle"></i> Log Study Session</h2>
+            </div>
+            <div class="card-body">
+                <form id="studyLogForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="date">Date</label>
+                            <input type="date" id="date" name="date" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="study_hours">Study Duration (hours)</label>
+                            <input type="number" id="study_hours" name="study_hours" 
+                                   min="0.5" max="12" step="0.5" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="subject">Subject</label>
+                            <input type="text" id="subject" name="subject" 
+                                   placeholder="Mathematics" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="study_time">Study Time</label>
+                            <select id="study_time" name="study_time" required>
+                                <option value="">Select time...</option>
+                                <option value="Morning">Morning (6am-12pm)</option>
+                                <option value="Afternoon">Afternoon (12pm-6pm)</option>
+                                <option value="Evening">Evening (6pm-10pm)</option>
+                                <option value="Night">Night (10pm-2am)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="method_used">Study Method</label>
+                            <select id="method_used" name="method_used" required>
+                                <option value="">Select method...</option>
+                                <option value="Pomodoro">Pomodoro Technique</option>
+                                <option value="Continuous">Continuous Study</option>
+                                <option value="Spaced">Spaced Repetition</option>
+                                <option value="Active">Active Recall</option>
+                                <option value="Intensive">Intensive Practice</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="distractions">Distraction Level</label>
+                            <select id="distractions" name="distractions" required>
+                                <option value="">Select level...</option>
+                                <option value="None">None</option>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="quiz_score">Quiz Score (%) - Optional</label>
+                        <input type="number" id="quiz_score" name="quiz_score" 
+                               min="0" max="100" placeholder="85">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Log
+                    </button>
+                </form>
+                
+                <div class="success-message" id="successMessage">
+                    <i class="fas fa-check-circle"></i> Study session logged successfully!
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-lightbulb"></i> Your Recommendations</h2>
+                <button class="btn btn-small" onclick="loadRecommendations()">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+            </div>
+            <div class="card-body" id="recommendationsContainer">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> Loading recommendations...
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-chart-area"></i> Performance Trends</h2>
+        </div>
+        <div class="card-body">
+            <canvas id="performanceChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+let performanceChart = null;
+
+// Set today's date as default
+document.getElementById('date').valueAsDate = new Date();
+
+// Load student stats
+async function loadStats() {
+    try {
+        const response = await fetch('/api/student-stats');
+        const data = await response.json();
+        
+        document.getElementById('totalSessions').textContent = data.total_sessions;
+        document.getElementById('totalHours').textContent = data.total_hours;
+        document.getElementById('avgScore').textContent = data.avg_score + '%';
+        document.getElementById('currentStreak').textContent = data.current_streak;
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
+}
+
+// Load recommendations
+async function loadRecommendations() {
+    const container = document.getElementById('recommendationsContainer');
+    container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+    
+    try {
+        const response = await fetch('/api/get-recommendations');
+        const data = await response.json();
+        
+        if (!data.has_recommendations) {
+            container.innerHTML = `
+                <div class="info-message">
+                    <i class="fas fa-info-circle"></i>
+                    <p>${data.message}</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = `
+            <div class="recommendation-content">
+                <div class="cluster-badge" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-user-tag"></i> ${data.cluster_name}
+                </div>
+                <p class="cluster-desc">${data.cluster_description}</p>
+                
+                <div class="rec-section">
+                    <h3><i class="fas fa-clock"></i> Optimal Study Times</h3>
+                    <div class="time-slots">
+                        <span class="time-badge">${data.preferred_time}</span>
+                    </div>
+                </div>
+                
+                <div class="rec-section">
+                    <h3><i class="fas fa-hourglass-half"></i> Study Duration</h3>
+                    <p class="rec-value">${data.recommended_hours} hours per session</p>
+                    <p class="rec-detail">with ${data.break_interval}-minute breaks</p>
+                </div>
+                
+                <div class="rec-section">
+                    <h3><i class="fas fa-brain"></i> Suggested Method</h3>
+                    <p class="rec-value">${data.suggested_method}</p>
+                </div>
+                
+                <div class="rec-section">
+                    <h3><i class="fas fa-tools"></i> Recommended Tools</h3>
+                    <div class="tools-list">
+                        ${data.recommended_tools.map(tool => `
+                            <span class="tool-badge"><i class="fas fa-check"></i> ${tool}</span>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="rec-section">
+                    <h3><i class="fas fa-calendar-week"></i> Weekly Schedule</h3>
+                    <div class="weekly-schedule">
+                        ${data.weekly_schedule.map(day => `
+                            <div class="day-schedule">
+                                <span class="day-name">${day.day}</span>
+                                <span class="day-hours">${day.hours}h</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Update chart
+        updatePerformanceChart(data.performance_data);
+    } catch (error) {
+        container.innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Error loading recommendations. Please try again.</p>
+            </div>
+        `;
+    }
+}
+
+function updatePerformanceChart(performanceData) {
+    const ctx = document.getElementById('performanceChart');
+    
+    if (performanceChart) {
+        performanceChart.destroy();
+    }
+    
+    if (!performanceData.dates || performanceData.dates.length === 0) {
+        ctx.parentElement.innerHTML = '<div class="info-message"><p>No performance data available yet. Start logging your study sessions!</p></div>';
+        return;
+    }
+    
+    performanceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: performanceData.dates,
+            datasets: [
+                {
+                    label: 'Study Hours',
+                    data: performanceData.study_hours,
+                    borderColor: '#2196F3',
+                    backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                    yAxisID: 'y',
+                    tension: 0.4
+                },
+                {
+                    label: 'Quiz Score (%)',
+                    data: performanceData.quiz_scores,
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    yAxisID: 'y1',
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Study Hours'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Quiz Score (%)'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                }
+            }
+        }
+    });
+}
+
+// Handle form submission
+document.getElementById('studyLogForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    try {
+        const response = await fetch('/api/log-study', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            document.getElementById('successMessage').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('successMessage').style.display = 'none';
+            }, 3000);
+            
+            e.target.reset();
+            document.getElementById('date').valueAsDate = new Date();
+            
+            // Reload stats and recommendations
+            loadStats();
+            loadRecommendations();
+        }
+    } catch (error) {
+        alert('Error logging study session. Please try again.');
+    }
+});
+
+// Initial load
+loadStats();
+loadRecommendations();
+</script>
+{% endblock %}
